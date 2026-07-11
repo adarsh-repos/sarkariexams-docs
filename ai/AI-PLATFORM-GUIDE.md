@@ -4,9 +4,10 @@
 |-------|-------|
 | **Document** | Single source of truth for AI architecture |
 | **Audience** | AI Team, Engineering, Product |
-| **Version** | 1.1 |
+| **Version** | 1.2 |
 | **Status** | Approved for implementation |
 | **Last updated** | 2026-07-11 |
+| **Exam target** | **BPSC Prelims + BPSC Mains (GS-I)** — dual-stage |
 
 > **This replaces** all split files in `docs/ai/01–09` and wiki AI docs `06`, `09`, `10`.  
 > AI Team receives this **Architecture Specification** — not ad-hoc prompts.
@@ -54,6 +55,29 @@ flowchart TB
 | **9** | Student APIs | **No LLM** | Backend | Serve SQL to PWA |
 | **10** | Reader UI | No | Frontend | Topic Workspace, practice |
 | **11** | Online AI Tutor | **Yes (real-time)** | AI Team (future) | Grounded Q&A only |
+
+### BPSC dual-stage target (Prelims + Mains)
+
+SarkariExamsAI is **BPSC-first**. Every worker receives an `exam_profile` with **both** stages in scope. Intelligence is produced **per stage** — Prelims MCQ patterns and Mains analytical prompts are never merged into one blob.
+
+| Stage | Code | Question style | What W4 must produce |
+|-------|------|----------------|------------------------|
+| **BPSC Prelims** | `PRE` | MCQ (4 options, negative marking) | `prelims_intelligence`: PYQ MCQs, MCQ formats, traps, fact recall |
+| **BPSC Mains GS-I** | `MAINS_GS1` | Descriptive (History, Geography) | `mains_intelligence`: analytical PYQs, answer frameworks, NCERT citations |
+
+**Canonical `exam_profile` (all workers):**
+```json
+{
+  "primary": "BPSC",
+  "stages": ["PRE", "MAINS_GS1"],
+  "bpsc_cycle": 68,
+  "negative_marking_prelims": true,
+  "mains_papers": ["GS1"],
+  "language": ["en", "hi"]
+}
+```
+
+**Rule:** `stage` is **required** on every PYQ, expected pattern, and stage-specific exam focus item.
 
 ---
 
@@ -218,10 +242,20 @@ flowchart LR
 {
   "paragraph_id": "P00421",
   "section_id": "SEC_3_2",
+  "section_title": "Harappan Cities",
+  "chapter_id": "CH_3",
+  "chapter_title": "The Harappan Civilization",
+  "subject": "History",
   "book_id": "hist_class10",
+  "page": 45,
   "text": "Lothal was an important port city of the Harappan Civilization.",
+  "figures": [{ "figure_id": "FIG_003", "caption": "Map of Harappan sites" }],
   "glossary": [{ "term": "Harappan", "meaning": "Indus Valley Civilization" }],
-  "exam_profile": { "primary": "BPSC" }
+  "exam_profile": {
+    "primary": "BPSC",
+    "stages": ["PRE", "MAINS_GS1"],
+    "negative_marking_prelims": true
+  }
 }
 ```
 
@@ -230,19 +264,32 @@ flowchart LR
 {
   "concepts": [
     { "name": "Harappan Civilization", "category": "Civilization", "importance": "high",
+      "prelims_relevance": "high", "mains_relevance": "high",
       "source_paragraph_id": "P00421" },
     { "name": "Lothal", "category": "Archaeological Site", "importance": "medium",
+      "prelims_relevance": "high", "mains_relevance": "medium",
       "source_paragraph_id": "P00421" }
   ],
   "atomic_facts": [
     { "statement": "Lothal was a port city of the Harappan Civilization.",
+      "fact_type": "place",
+      "prelims_relevance": "high",
+      "mains_relevance": "medium",
       "source_paragraph_id": "P00421" }
   ],
+  "dates": [],
   "entities": [{ "name": "Lothal", "type": "place" }],
   "keywords": [{ "term": "port city" }],
   "learning_objectives": [
-    { "objective": "Identify Lothal as a Harappan port city", "bloom_level": "remember" }
-  ]
+    { "objective": "Identify Lothal as a Harappan port city", "bloom_level": "remember",
+      "stage": "PRE" },
+    { "objective": "Explain Harappan urban planning and trade using Lothal as example",
+      "bloom_level": "analyze", "stage": "MAINS_GS1" }
+  ],
+  "bihar_relevance": {
+    "applicable": false,
+    "note": "Topic is pan-India; no direct Bihar site. For Bihar history topics, flag Patliputra/Magadha links."
+  }
 }
 ```
 
@@ -281,32 +328,97 @@ flowchart LR
 
 | | |
 |---|---|
-| **Purpose** | Parse PYQs/MCQs and link each question to concepts and exam patterns. **Separate pipeline from paragraphs.** |
+| **Purpose** | Parse **BPSC Prelims MCQs** and **BPSC Mains descriptive questions**; link each to concepts and exam patterns. **Separate pipeline from paragraphs.** |
 | **Input** | Raw question from question bank (CSV, PDF extract, manual entry) |
-| **Output** | Parsed MCQ, concept mappings, pattern type, difficulty, Bloom level, explanation draft, confusions |
+| **Output** | Parsed question (MCQ or descriptive), concept mappings, pattern type, difficulty, Bloom level, explanation draft, confusions |
 
-**Input example:**
+**Prelims input example:**
 ```json
 {
-  "raw_text": "Lothal is famous for?\n(A) Steel (B) Dockyard (C) Temple (D) Coins",
-  "exam": "BPSC", "year": 2022, "correct_hint": "B"
+  "raw_text": "Consider the following statements about Lothal:\n1. It had a dockyard.\n2. It is in Rajasthan.\nWhich is/are correct?\n(A) 1 only (B) 2 only (C) Both (D) Neither",
+  "exam": "BPSC",
+  "bpsc_cycle": 68,
+  "stage": "PRE",
+  "paper": "General Studies",
+  "question_number": 42,
+  "year": 2022,
+  "correct_hint": "A",
+  "negative_marking": true,
+  "language": "en",
+  "source": "official"
 }
 ```
 
-**Output example:**
+**Mains input example:**
+```json
+{
+  "raw_text": "Discuss the significance of Harappan urban planning with special reference to trade and craft production. (250 words, 15 marks)",
+  "exam": "BPSC",
+  "bpsc_cycle": 67,
+  "stage": "MAINS_GS1",
+  "paper": "General Studies Paper 1",
+  "question_number": 3,
+  "year": 2021,
+  "marks": 15,
+  "word_limit": 250,
+  "language": "en",
+  "source": "official"
+}
+```
+
+**Prelims output example:**
 ```json
 {
   "question_id": "Q_bpsc_hist_lothal_042",
-  "stem": "Lothal is famous for?",
-  "options": [...],
-  "correct_option_id": "B",
-  "explanation": "Lothal had a Harappan dockyard.",
+  "stage": "PRE",
+  "question_format": "statements",
+  "stem": "Consider the following statements about Lothal…",
+  "statements": [
+    { "id": "1", "text": "It had a dockyard.", "is_correct": true },
+    { "id": "2", "text": "It is in Rajasthan.", "is_correct": false }
+  ],
+  "options": [
+    { "id": "A", "text": "1 only" },
+    { "id": "B", "text": "2 only" },
+    { "id": "C", "text": "Both" },
+    { "id": "D", "text": "Neither" }
+  ],
+  "correct_option_id": "A",
+  "negative_marking": true,
+  "explanation": "Lothal had a Harappan dockyard and is in Gujarat, not Rajasthan.",
   "concept_mappings": [{ "concept_id": "CONCEPT_hist10_lothal", "confidence": 0.96 }],
-  "pattern": { "type": "direct_fact", "confidence": 0.93 },
+  "pattern": { "type": "statements", "confidence": 0.93 },
   "bloom": { "level": "remember" },
   "difficulty": { "level": "easy", "score": 2 }
 }
 ```
+
+**Mains output example:**
+```json
+{
+  "question_id": "Q_bpsc_hist_harappan_mains_003",
+  "stage": "MAINS_GS1",
+  "question_format": "analytical",
+  "stem": "Discuss the significance of Harappan urban planning with special reference to trade and craft production.",
+  "marks": 15,
+  "word_limit": 250,
+  "explanation": "Answer should cover grid planning, dockyard/trade (Lothal), craft specialisation, and conclusion on urbanism.",
+  "answer_framework": [
+    "Intro: mature Harappan urbanism",
+    "Body: town planning, Lothal dockyard, trade routes, craft centres",
+    "Conclusion: legacy of planned cities"
+  ],
+  "ncert_citations": ["hist_class10 CH_3, pp. 45–46"],
+  "concept_mappings": [{ "concept_id": "CONCEPT_hist10_harappan_urbanism", "confidence": 0.94 }],
+  "pattern": { "type": "analytical", "confidence": 0.91 },
+  "bloom": { "level": "analyze" },
+  "difficulty": { "level": "medium", "score": 6 }
+}
+```
+
+**BPSC Prelims `question_format` enum:** `direct_fact` | `statements` | `assertion_reason` | `match_the_following` | `chronology` | `map_based` | `odd_one_out`
+
+**BPSC Mains `question_format` enum:** `analytical` | `compare_contrast` | `cause_effect` | `evaluate_statement` | `map_based_descriptive`
 
 ---
 
@@ -314,62 +426,130 @@ flowchart LR
 
 | | |
 |---|---|
-| **Purpose** | Compute exam-facing signals: revision priority, PYQ frequency, topic weightage, trends. Powers Reader intelligence rail. |
-| **Input** | Published Knowledge Graph + Question Graph + `exam_profile` (BPSC, UPSC…) |
-| **Output** | Per-concept and per-topic intelligence for Student APIs |
+| **Purpose** | Compute **stage-specific** exam signals for BPSC Prelims and BPSC Mains GS-I. Powers Reader intelligence rail. |
+| **Input** | Published Knowledge Graph + Question Graph + `exam_profile` with `stages: ["PRE", "MAINS_GS1"]` |
+| **Output** | Per-topic intelligence with **shared** + **prelims_intelligence** + **mains_intelligence** blocks |
 
 **Output example (topic — powers Reader UI):**
 ```json
 {
   "section_id": "SEC_3_2",
   "exam_code": "BPSC",
-  "why_it_matters": "Harappan sites are frequent BPSC Prelims MCQs.",
-  "key_points": ["Lothal = dockyard", "Gujarat location"],
-  "pyq_patterns": [
-    {
-      "question": "Lothal is famous for?",
-      "type": "direct_fact",
-      "exam": "BPSC",
-      "year": 2022,
-      "stage": "PRE",
-      "question_id": "Q_bpsc_hist_lothal_042",
-      "tip": "Link site → unique feature (dockyard)"
-    },
-    {
-      "question": "Which Harappan site is in Gujarat?",
-      "type": "direct_fact",
-      "exam": "BPSC",
-      "year": 2019,
-      "stage": "PRE",
-      "question_id": "Q_bpsc_hist_lothal_019",
-      "tip": "Map + state recall"
-    }
-  ],
-  "expected_patterns": [
-    {
-      "pattern": "match_site_to_feature",
-      "description": "Match Harappan site to its unique feature (dockyard, granary, citadel)",
-      "likelihood": "high",
-      "reason": "BPSC repeats site-feature MCQs every 2–3 years; Lothal dockyard is high-frequency"
-    },
-    {
-      "pattern": "map_based",
-      "description": "Locate Lothal / Dholavira on map of Gujarat",
-      "likelihood": "medium",
-      "reason": "Geography linkage common in Prelims when map questions appear"
-    },
-    {
-      "pattern": "chronology",
-      "description": "Order Harappan phases or site occupation periods",
-      "likelihood": "low",
-      "reason": "Less common for this topic but possible in Mains analytical framing"
-    }
-  ],
+  "why_it_matters": "Harappan sites are frequent BPSC Prelims MCQs; urban planning and trade are common Mains GS-I analytical themes.",
+  "key_points": ["Lothal = dockyard", "Gujarat location", "Grid town planning", "Trade & craft specialisation"],
+  "exam_focus": {
+    "prelims": [
+      "Site → unique feature matching (Lothal = dockyard)",
+      "Harappan site ↔ state/region",
+      "Statement-based MCQs on urban features"
+    ],
+    "mains": [
+      "Harappan urban planning as analytical theme",
+      "Trade, dockyard, and craft production linkages",
+      "Compare with contemporary Gangetic valley settlements"
+    ]
+  },
+  "bihar_angle": "Indirect for this topic. For Bihar GS: contrast with later Gangetic urban centres when syllabus links ancient India to eastern India.",
+  "prelims_intelligence": {
+    "pyq_patterns": [
+      {
+        "question": "Lothal is famous for?",
+        "type": "direct_fact",
+        "exam": "BPSC",
+        "year": 2022,
+        "stage": "PRE",
+        "bpsc_cycle": 68,
+        "question_number": 42,
+        "question_id": "Q_bpsc_hist_lothal_042",
+        "tip": "Link site → unique feature (dockyard)"
+      },
+      {
+        "question": "Which Harappan site is in Gujarat?",
+        "type": "direct_fact",
+        "exam": "BPSC",
+        "year": 2019,
+        "stage": "PRE",
+        "bpsc_cycle": 65,
+        "question_id": "Q_bpsc_hist_lothal_019",
+        "tip": "Map + state recall"
+      }
+    ],
+    "expected_patterns": [
+      {
+        "pattern": "match_site_to_feature",
+        "stage": "PRE",
+        "description": "Match Harappan site to its unique feature (dockyard, granary, citadel)",
+        "sample_stem": "Match the Harappan site with its distinctive feature",
+        "likelihood": "high",
+        "reason": "BPSC repeats site-feature MCQs every 2–3 years; Lothal dockyard is high-frequency"
+      },
+      {
+        "pattern": "map_based",
+        "stage": "PRE",
+        "description": "Locate Lothal / Dholavira on map of Gujarat",
+        "sample_stem": "On the map, identify the Harappan port city in Gujarat",
+        "likelihood": "medium",
+        "reason": "Geography linkage common in Prelims when map questions appear"
+      }
+    ],
+    "pyq_years_asked": [2018, 2019, 2022, 2023],
+    "pyq_frequency": "high",
+    "revision_priority": 0.87,
+    "priority_reason": "High Prelims repeat rate on site-feature and state-location MCQs"
+  },
+  "mains_intelligence": {
+    "pyq_patterns": [
+      {
+        "question": "Discuss the significance of Harappan urban planning with special reference to trade.",
+        "type": "analytical",
+        "exam": "BPSC",
+        "year": 2021,
+        "stage": "MAINS_GS1",
+        "bpsc_cycle": 67,
+        "marks": 15,
+        "word_limit": 250,
+        "question_id": "Q_bpsc_hist_harappan_mains_003",
+        "tip": "Structure: planning → Lothal dockyard → trade/craft → conclusion"
+      }
+    ],
+    "expected_patterns": [
+      {
+        "pattern": "analytical",
+        "stage": "MAINS_GS1",
+        "description": "Evaluate Harappan urbanism — planning, trade, craft",
+        "sample_stem": "Examine the features of Harappan town planning. How did trade shape urban centres?",
+        "likelihood": "high",
+        "reason": "Mains GS-I frequently asks multi-part analytical questions on ancient urbanism"
+      },
+      {
+        "pattern": "compare_contrast",
+        "stage": "MAINS_GS1",
+        "description": "Compare Harappan cities with later Vedic/Gangetic settlements",
+        "sample_stem": "Compare town planning in the Harappan Civilization with later phases of Indian history",
+        "likelihood": "medium",
+        "reason": "Comparative framing is a standard BPSC Mains device for History GS-I"
+      }
+    ],
+    "analytical_prompts": [
+      {
+        "question": "Discuss the significance of Harappan urban planning with special reference to trade and craft production.",
+        "marks": 15,
+        "word_limit": 250,
+        "answer_framework": ["Intro: mature Harappan phase", "Body: grid planning, Lothal, trade", "Conclusion"],
+        "ncert_citations": ["hist_class10 CH_3, pp. 45–46"]
+      }
+    ],
+    "pyq_years_asked": [2019, 2021],
+    "pyq_frequency": "medium",
+    "revision_priority": 0.72,
+    "priority_reason": "Moderate Mains frequency; high conceptual weight when ancient India is in the paper"
+  },
   "remember": [{ "label": "Lothal", "hook": "L = Dockyard in Gujarat" }],
-  "avoid": ["Do not confuse Lothal dockyard with Dholavira's water management"],
-  "revision_priority": 0.87,
-  "pyq_years_asked": [2018, 2019, 2022, 2023],
-  "pyq_frequency": "high"
+  "avoid": [
+    "Do not confuse Lothal dockyard (Gujarat) with Dholavira's water management",
+    "Prelims: Rajasthan is a common distractor for Gujarat sites",
+    "Mains: do not write only site facts — link planning, trade, and craft"
+  ]
 }
 ```
 
@@ -377,18 +557,28 @@ flowchart LR
 
 | Field | Type | Purpose |
 |-------|------|---------|
-| `pyq_patterns[]` | array | **Past** questions — what BPSC **already asked** |
-| `pyq_patterns[].year` | int | **Year the PYQ appeared** (required for published PYQs) |
-| `pyq_patterns[].exam` | string | e.g. `BPSC`, `UPSC` |
-| `pyq_patterns[].stage` | string | `PRE`, `MAINS_GS1`, etc. |
-| `pyq_patterns[].question_id` | string | Link to Question Graph |
-| `expected_patterns[]` | array | **Future** patterns — what **may be asked** based on trends |
+| `exam_focus.prelims` | string[] | High-yield **Prelims** angles (MCQ traps, fact clusters) |
+| `exam_focus.mains` | string[] | High-yield **Mains** angles (analytical themes, comparisons) |
+| `prelims_intelligence` | object | All Prelims-specific PYQ + prediction signals |
+| `mains_intelligence` | object | All Mains-specific PYQ + analytical prompts + frameworks |
+| `prelims_intelligence.pyq_patterns[]` | array | **Past Prelims MCQs** — grounded in W3 |
+| `mains_intelligence.pyq_patterns[]` | array | **Past Mains questions** — grounded in W3 |
+| `pyq_patterns[].year` | int | Year the PYQ appeared (required for published PYQs) |
+| `pyq_patterns[].stage` | enum | `PRE` or `MAINS_GS1` (required) |
+| `pyq_patterns[].bpsc_cycle` | int | e.g. `68` for 68th BPSC |
+| `expected_patterns[]` | array | **Future** patterns — max **3 per stage** |
+| `expected_patterns[].stage` | enum | `PRE` or `MAINS_GS1` (required) |
+| `expected_patterns[].sample_stem` | string | Example future question stem (for review) |
 | `expected_patterns[].likelihood` | enum | `high` / `medium` / `low` |
-| `expected_patterns[].reason` | string | Why we predict this pattern (required for review) |
-| `pyq_years_asked` | int[] | Denormalized list of all years for quick UI display |
-| `pyq_frequency` | enum | `high` / `medium` / `low` / `none` |
+| `mains_intelligence.analytical_prompts[]` | array | Practice Mains questions with marks, word limit, framework |
+| `revision_priority` | float | Per-stage score (0–1); always pair with `priority_reason` |
+| `bihar_angle` | string | Bihar-specific linkage when applicable |
+| `pyq_years_asked` | int[] | Per-stage denormalized years for UI chips |
+| `pyq_frequency` | enum | Per-stage: `high` / `medium` / `low` / `none` |
 
-**Rule:** `pyq_patterns` must be grounded in real PYQs (W3 / licensed bank). `expected_patterns` are **predictions** — LLM or rule-based — and **always require human review** before publish.
+**Student API flattening (Layer 9):** APIs may expose a unified `pyqs[]` array for the Reader UI by merging `prelims_intelligence.pyq_patterns` + `mains_intelligence.pyq_patterns`, each item carrying `stage`. `exam_focus` may be returned as a flat list (Prelims first) for backward compatibility.
+
+**Rule:** `pyq_patterns` must be grounded in real PYQs (W3 / licensed bank). `expected_patterns` and `analytical_prompts` are **predictions** — **always require human review** before publish.
 
 **Execution order:** Orchestration runs W1 → W2 (per book). W3 runs on question bank in parallel. W4 runs after KG+QG published and validation passes.
 
@@ -466,7 +656,12 @@ flowchart TB
 | `V-W4-001` | Every `pyq_patterns[].year` required when `source=pyq` |
 | `V-W4-002` | `expected_patterns[].reason` ≥ 20 chars |
 | `V-W4-003` | `expected_patterns` must not cite fake PYQ years |
-| `V-W4-004` | `pyq_years_asked` must match union of `pyq_patterns[].year` |
+| `V-W4-004` | `pyq_years_asked` must match union of `pyq_patterns[].year` **per stage** |
+| `V-W4-005` | `stage` required on every PYQ and expected pattern |
+| `V-W4-006` | Max 3 `expected_patterns` per stage (`PRE`, `MAINS_GS1`) |
+| `V-W4-007` | `revision_priority` must include `priority_reason` |
+| `V-W4-008` | Mains `analytical_prompts` must include `answer_framework` or `ncert_citations` |
+| `V-W4-009` | Prelims patterns must use Prelims `question_format` enum only |
 
 ---
 
@@ -557,7 +752,7 @@ Question → tests → Concept → grounded_in → Paragraph
 | **Input** | Student APIs JSON |
 | **Output** | Rendered UI (no AI) |
 
-**AI role:** None. Displays Layer 8 output — including `pyq_patterns` (with year), `expected_patterns`, highlights, traps.
+**AI role:** None. Displays Layer 8 output — including Prelims + Mains intelligence rails: `pyq_patterns` (with `stage` + `year`), `expected_patterns`, `analytical_prompts`, highlights, traps.
 
 ---
 
@@ -582,10 +777,10 @@ Student question → Retriever (KG + paragraphs + facts + PYQs) → LLM → Grou
 | Component | Trigger | Input (from Engineering) | Output |
 |-----------|---------|--------------------------|--------|
 | **Orchestration** | Book loaded / manual | `book_id`, `version_id`, exam_profile, worker DAG | job status, `extraction_run_id`, worker invocations |
-| **W1 Content** | Orchestrator dispatch | `paragraph_id`, `text`, `section_id`, `book_id`, glossary, exam_profile | concepts, atomic_facts, entities, keywords, learning_objectives |
+| **W1 Content** | Orchestrator dispatch | `paragraph_id`, `text`, `section_id`, `book_id`, glossary, `exam_profile` (both stages) | concepts, atomic_facts, entities, keywords, learning_objectives, `prelims_relevance`, `mains_relevance` |
 | **W2 Relationship** | W1 section complete | W1 outputs + neighbour sections | relationships, timeline, geography, synonyms, cross_refs |
-| **W3 Question** | PYQ import / batch | raw question text, exam, year, answer hint | parsed MCQ, concept_mappings, pattern, bloom, difficulty, explanation |
-| **W4 Exam** | KG + QG published | graphs + exam_profile | topic intelligence incl. `pyq_patterns` (with year), `expected_patterns` |
+| **W3 Question** | PYQ import / batch | raw question, `stage` (`PRE` \| `MAINS_GS1`), exam, year, bpsc_cycle | parsed MCQ or descriptive Q, concept_mappings, pattern, bloom, difficulty, explanation |
+| **W4 Exam** | KG + QG published | graphs + `exam_profile` | topic intelligence: `prelims_intelligence`, `mains_intelligence`, `exam_focus` per stage |
 | **Validation Engine** | After each worker | worker JSON + canonical paragraphs | `ValidationReport`, routing, staging or reject |
 | **Review + Publish** | Staging ready | staging rows | approved → `intelligence.*` published |
 
@@ -649,8 +844,8 @@ Every AI output that contains a **fact** must satisfy:
 | Phase | Scope | Weeks |
 |-------|-------|-------|
 | **1** | Orchestration + W1 + W2 + Validation Engine for `hist_class10` CH 1–3 | 8 |
-| **2** | W3 on BPSC PYQ sample + Question Graph | 6 |
-| **3** | W4 (`pyq_patterns` + `expected_patterns`) + Intelligence Engine + API | 4 |
+| **2** | W3 on BPSC PYQ sample (Prelims MCQ + Mains GS-I) + Question Graph | 6 |
+| **3** | W4 (`prelims_intelligence` + `mains_intelligence`) + Intelligence Engine + API | 4 |
 | **4** | Full book + review UI | 4 |
 
 ---
@@ -664,11 +859,13 @@ Every AI output that contains a **fact** must satisfy:
 
 **W2 output:** `Rowlatt Act` —caused→ `Satyagraha`; Timeline `1919`
 
-**W3 output (PYQ):** "Rowlatt Act allowed detention without trial" → maps to `CONCEPT_rowlatt`
+**W3 output (Prelims PYQ):** "Rowlatt Act allowed detention without trial" → maps to `CONCEPT_rowlatt`; `stage: PRE`, `question_format: statements`
 
-**W4 output:** Topic intelligence — PYQ patterns with years `[2019, 2022]`; expected_patterns `cause_effect`, `direct_fact`; revision_priority 0.91
+**W3 output (Mains PYQ):** "Discuss the causes and consequences of the Rowlatt Satyagraha" → `stage: MAINS_GS1`, `question_format: analytical`
 
-**Student sees (Layer 10):** Highlight on "Rowlatt Act"; rail shows "Asked in BPSC 2019, 2022"; expected pattern "match Act → provision"
+**W4 output:** Topic intelligence — Prelims PYQ patterns with years `[2019, 2022]`; Mains analytical prompt with answer framework; `expected_patterns` per stage; `revision_priority` + `priority_reason` for each stage
+
+**Student sees (Layer 10):** Highlight on "Rowlatt Act"; Prelims rail shows "Asked in BPSC Prelims 2019, 2022"; Mains rail shows analytical prompt + framework; expected Prelims pattern "match Act → provision"; expected Mains pattern "cause_effect"
 
 ---
 
@@ -685,7 +882,47 @@ Every AI output that contains a **fact** must satisfy:
 
 ---
 
-## Appendix — Why 4 workers, not 9 agents
+## Appendix A — BPSC Prelims + Mains pattern taxonomy
+
+Use these enums in W3 `question_format` and W4 `expected_patterns[].pattern`.
+
+### Prelims (`stage: PRE`)
+
+| Pattern | When BPSC uses it |
+|---------|-------------------|
+| `direct_fact` | Single correct answer — date, person, place, definition |
+| `statements` | "Consider the following… Which is/are correct?" |
+| `assertion_reason` | Assertion (A) + Reason (R) pairs |
+| `match_the_following` | Column A ↔ Column B pairing |
+| `chronology` | Arrange events in order |
+| `map_based` | Locate site/river/state on map |
+| `odd_one_out` | One option does not belong |
+| `bihar_specific` | Bihar geography/history fact (when topic applies) |
+
+### Mains GS-I (`stage: MAINS_GS1`)
+
+| Pattern | When BPSC uses it |
+|---------|-------------------|
+| `analytical` | Multi-part descriptive — "Discuss / Examine / Explain" |
+| `compare_contrast` | Germany vs Italy, Harappan vs later urbanism |
+| `cause_effect` | Event → causes → consequences |
+| `evaluate_statement` | "To what extent…" / critical evaluation |
+| `map_based_descriptive` | Describe regional features with map context |
+
+### What each stage needs from W4 (checklist)
+
+| Signal | Prelims | Mains |
+|--------|---------|-------|
+| PYQ history | `prelims_intelligence.pyq_patterns` | `mains_intelligence.pyq_patterns` |
+| Future patterns | `prelims_intelligence.expected_patterns` (≤3) | `mains_intelligence.expected_patterns` (≤3) |
+| Practice prompts | MCQ-style via practice engine | `mains_intelligence.analytical_prompts` |
+| Exam angles | `exam_focus.prelims` | `exam_focus.mains` |
+| Traps | Option distractors, date/place confusion | Over-factual answers without analysis |
+| Citations | Optional | `ncert_citations` required on analytical prompts |
+
+---
+
+## Appendix B — Why 4 workers, not 9 agents
 
 Early design had 9 micro-agents (Concept, Fact, Entity, Relation, Timeline, Geography, Keyword, Learning Objective, Difficulty).
 

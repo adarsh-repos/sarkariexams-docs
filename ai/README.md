@@ -15,7 +15,7 @@ docs/ai/
 
 ## [AI Platform Guide](./AI-PLATFORM-GUIDE.md)
 
-The complete specification:
+The complete specification (v1.2 — **BPSC Prelims + Mains dual-stage**):
 
 - **Part 1–2** — Platform layers (high level + input/output per layer)
 - **Part 3** — AI worker I/O master table
