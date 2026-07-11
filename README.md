@@ -32,11 +32,9 @@ CONTENT SOURCES (NCERT, PYQs, Notes…)
         ↓
 DETERMINISTIC PIPELINE (no AI) → PostgreSQL Canonical Store
         ↓
-OFFLINE AI PIPELINE (4 Workers) → Validation → Review → Knowledge Graph
+AI ORCHESTRATION → OFFLINE AI WORKERS (4) → VALIDATION ENGINE → Review
         ↓
-QUESTION INTELLIGENCE PIPELINE (separate) → Question Graph
-        ↓
-INTELLIGENCE ENGINE (merge graphs) → Exam Intelligence
+Knowledge Graph + Question Graph → Intelligence Engine
         ↓
 STUDENT APIs (SQL only, no LLM)
         ↓
