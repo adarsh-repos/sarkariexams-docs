@@ -4,7 +4,7 @@
 |-------|-------|
 | **Document** | Single source of truth for AI architecture |
 | **Audience** | AI Team, Engineering, Product |
-| **Version** | 1.2 |
+| **Version** | 1.3 |
 | **Status** | Approved for implementation |
 | **Last updated** | 2026-07-11 |
 | **Exam target** | **BPSC Prelims + BPSC Mains (GS-I)** — dual-stage |
@@ -16,24 +16,25 @@
 
 ## Part 1 — High-level platform layers
 
-SarkariExamsAI is a **Knowledge Intelligence Platform**, not a chatbot. Content flows through **eleven layers**. **Layer 3–5** are the AI platform core (orchestration, workers, validation). **Layer 11** is the only future **online** LLM use.
+SarkariExamsAI is a **Knowledge Intelligence Platform**, not a chatbot. Content flows through **eleven layers** plus **Layer 7b** (multi-book concept resolution). **Layer 3–5** are the AI platform core (orchestration, workers, validation). **Layer 11** is the only future **online** LLM use.
 
 ```mermaid
 flowchart TB
-    L0[Layer 0 — Content Sources]
-    L1[Layer 1 — Deterministic Pipeline<br/>NO AI]
-    L2[Layer 2 — Canonical Database<br/>NO AI]
+    L0[Layer 0 — Content Sources<br/>NCERT + reference books + PYQs]
+    L1[Layer 1 — Deterministic Pipeline<br/>NO AI — per book_id]
+    L2[Layer 2 — Canonical Database<br/>NO AI — isolated per book]
     L3[Layer 3 — AI Orchestration Layer]
-    L4[Layer 4 — Offline AI Workers<br/>4 workers]
+    L4[Layer 4 — Offline AI Workers<br/>4 workers per book_id]
     L5[Layer 5 — Validation Engine]
     L6[Layer 6 — Human Review + Publish]
-    L7[Layer 7 — Knowledge Graph + Question Graph]
-    L8[Layer 8 — Intelligence Engine]
+    L7[Layer 7 — Book KG + Question Graph<br/>CONCEPT_book_slug]
+    L7b[Layer 7b — Concept Resolution<br/>book concept → EXCON_bpsc_*]
+    L8[Layer 8 — Intelligence Engine<br/>per exam concept / syllabus topic]
     L9[Layer 9 — Student APIs<br/>SQL only, NO LLM]
     L10[Layer 10 — Reader UI]
     L11[Layer 11 — Online AI Tutor<br/>FUTURE]
 
-    L0 --> L1 --> L2 --> L3 --> L4 --> L5 --> L6 --> L7 --> L8 --> L9 --> L10
+    L0 --> L1 --> L2 --> L3 --> L4 --> L5 --> L6 --> L7 --> L7b --> L8 --> L9 --> L10
     L7 -.-> L11
     L8 -.-> L11
     L2 -.-> L11
@@ -50,8 +51,9 @@ flowchart TB
 | **4** | Offline AI Workers | **Yes (batch)** | **AI Team** | Extract concepts, facts, relations, questions |
 | **5** | **Validation Engine** | No LLM | **AI Team** | Automated schema, ontology, grounding, dedup checks |
 | **6** | Human Review + Publish | No | AI Team + Content Ops | Approve staging → publish to `intelligence.*` |
-| **7** | Knowledge + Question Graph | No | Data Platform | Connected intelligence nodes |
-| **8** | Intelligence Engine | Mostly deterministic | AI Team + Backend | Merge graphs → exam signals |
+| **7** | Book Knowledge + Question Graph | No | Data Platform | Per-book concepts, facts, relationships, PYQs |
+| **7b** | Concept Resolution | No LLM (+ human review) | AI Team + Content Ops | Merge book concepts → exam-level `EXCON_*` |
+| **8** | Intelligence Engine | Mostly deterministic | AI Team + Backend | Merge resolved graphs → exam signals (W4) |
 | **9** | Student APIs | **No LLM** | Backend | Serve SQL to PWA |
 | **10** | Reader UI | No | Frontend | Topic Workspace, practice |
 | **11** | Online AI Tutor | **Yes (real-time)** | AI Team (future) | Grounded Q&A only |
@@ -156,7 +158,8 @@ flowchart TB
 
 | Responsibility | Description |
 |----------------|-------------|
-| **Job DAG** | Enforce order: W1 → W2 per section; W3 parallel on question bank; W4 after KG+QG published |
+| **Job DAG** | Enforce order: W1 → W2 per section **per `book_id`**; W3 parallel on question bank; Layer 7b after all books in a syllabus pack; W4 after resolution |
+| **Syllabus packs** | Group books for cross-book merge, e.g. `bpsc_gs1_history`: `hist_class10`, `hist_class12_themes`, `spectrum_hist_modern` |
 | **Context assembly** | Build `ParagraphContext` / `TopicContext` from canonical DB before each worker call |
 | **Batching** | Group paragraphs by `section_id`; token budget per batch |
 | **Idempotency** | Re-run safe: same `extraction_run_id` + inputs → replace staging rows |
@@ -386,7 +389,9 @@ flowchart LR
   "correct_option_id": "A",
   "negative_marking": true,
   "explanation": "Lothal had a Harappan dockyard and is in Gujarat, not Rajasthan.",
-  "concept_mappings": [{ "concept_id": "CONCEPT_hist10_lothal", "confidence": 0.96 }],
+  "concept_mappings": [
+    { "exam_concept_id": "EXCON_bpsc_lothal", "book_concept_id": "CONCEPT_hist10_lothal", "confidence": 0.96 }
+  ],
   "pattern": { "type": "statements", "confidence": 0.93 },
   "bloom": { "level": "remember" },
   "difficulty": { "level": "easy", "score": 2 }
@@ -409,7 +414,9 @@ flowchart LR
     "Conclusion: legacy of planned cities"
   ],
   "ncert_citations": ["hist_class10 CH_3, pp. 45–46"],
-  "concept_mappings": [{ "concept_id": "CONCEPT_hist10_harappan_urbanism", "confidence": 0.94 }],
+  "concept_mappings": [
+    { "exam_concept_id": "EXCON_bpsc_harappan_urbanism", "book_concept_id": "CONCEPT_hist10_harappan_urbanism", "confidence": 0.94 }
+  ],
   "pattern": { "type": "analytical", "confidence": 0.91 },
   "bloom": { "level": "analyze" },
   "difficulty": { "level": "medium", "score": 6 }
@@ -678,26 +685,82 @@ flowchart TB
 
 ---
 
-### Layer 7 — Knowledge Graph + Question Graph
+### Layer 7 — Book Knowledge Graph + Question Graph
 
 | | |
 |---|---|
-| **Purpose** | Store **connected** intelligence — not flat JSON files. |
+| **Purpose** | Store **per-book** connected intelligence — concepts, facts, and PYQs scoped to one `book_id`. |
 | **Input** | Approved staging rows from Layer 4 |
-| **Output** | Queryable graph in PostgreSQL `intelligence.*` |
+| **Output** | Queryable graph in PostgreSQL `intelligence.*` (book-scoped) |
 
-**Knowledge Graph (from W1 + W2):**
+**Knowledge Graph (from W1 + W2 — per book):**
 ```
-Concept → Facts → Entities → Relationships → Timeline → Geography
+CONCEPT_{book}_{slug} → Facts → Entities → Relationships → Timeline → Geography
 ```
 
 **Question Graph (from W3):**
 ```
-Question → tests → Concept → grounded_in → Paragraph
+Question → tests → book Concept → grounded_in → Paragraph (same book_id)
          → Pattern, Bloom, Difficulty
 ```
 
-**AI role:** None at runtime — stores published AI output.
+**AI role:** None at runtime — stores published AI output. **Does not merge across books.**
+
+---
+
+### Layer 7b — Concept Resolution ⭐ MULTI-BOOK
+
+| | |
+|---|---|
+| **Purpose** | Map **book concepts** from multiple publications (NCERT, Spectrum, etc.) to **one exam-level concept** per BPSC syllabus topic. |
+| **Input** | Published book graphs from Layer 7 for all books in a `syllabus_pack_id` |
+| **Output** | `exam_concepts`, `concept_mappings` (book → exam), optional `syllabus_topic` links |
+| **AI role** | **No LLM in production path.** Rule-based alias match + embedding suggestions; **human review** approves merges. |
+
+**Why this layer exists:** W1–W2 run **per book** so every fact stays grounded to its source paragraph. But BPSC tests **topics**, not books — "Rowlatt Act" in NCERT and Spectrum must resolve to one exam concept for PYQs, revision, and W4 intelligence.
+
+**Two-tier concept model:**
+
+| Tier | ID pattern | Scope | Example |
+|------|------------|-------|---------|
+| **Book concept** | `CONCEPT_{book}_{slug}` | One publication | `CONCEPT_hist_class10_rowlatt_act` |
+| **Exam concept** | `EXCON_{exam}_{slug}` | BPSC syllabus level | `EXCON_bpsc_rowlatt_act` |
+
+**Resolution rules:**
+
+| Method | Example | Review |
+|--------|---------|--------|
+| Exact name match | "Rowlatt Act" in NCERT + Spectrum | Auto-suggest → human confirm |
+| W2 synonym / alias | "Rowlatt Bills" → Rowlatt Act | Human confirm |
+| Embedding similarity | Score > 0.92 between book concepts | Priority review queue |
+| No match | Spectrum-only sub-topic | Stays book-scoped until mapped |
+
+**Output example:**
+```json
+{
+  "exam_concept_id": "EXCON_bpsc_rowlatt_act",
+  "canonical_name": "Rowlatt Act",
+  "exam_code": "BPSC",
+  "syllabus_topic_id": "SYL_bpsc_modern_india_rowlatt",
+  "book_mappings": [
+    { "book_concept_id": "CONCEPT_hist_class10_rowlatt_act", "book_id": "hist_class10", "role": "primary" },
+    { "book_concept_id": "CONCEPT_spectrum_hist_rowlatt_act", "book_id": "spectrum_hist_modern", "role": "reference" }
+  ],
+  "status": "published"
+}
+```
+
+**Grounding rule (unchanged):** Facts and paragraphs are **never merged**. Only the **exam concept node** groups book concepts. Each fact keeps `source_paragraph_id` + `book_id`.
+
+**Book metadata (Layer 2 / orchestration):**
+
+| Field | Purpose |
+|-------|---------|
+| `book_role` | `primary` (NCERT reading path) \| `reference` (Spectrum, coaching notes) \| `pyq_source` |
+| `syllabus_pack_id` | Books processed together for Layer 7b, e.g. `bpsc_gs1_history` |
+| `pairs_with` | Optional related `book_id` list for UI "supplement" tabs |
+
+**W3 / W4 after resolution:** Published PYQ mappings and exam intelligence target `exam_concept_id` (`EXCON_*`), not raw `CONCEPT_{book}_*`.
 
 ---
 
@@ -705,20 +768,20 @@ Question → tests → Concept → grounded_in → Paragraph
 
 | | |
 |---|---|
-| **Purpose** | Merge Knowledge Graph × Question Graph → per-concept exam intelligence. |
-| **Input** | Both graphs + exam profile |
+| **Purpose** | Merge **resolved exam concepts** × Question Graph → per-topic exam intelligence (W4). Aggregates facts and PYQs across all mapped books. |
+| **Input** | Layer 7b exam concepts + Question Graph + `exam_profile` |
 | **Output** | `revision_priority`, `pyq_count`, `importance_score`, smart highlight candidates, topic workspace bundle |
 
-**Per concept, compute:**
+**Per exam concept, compute:**
 
 | Signal | Source |
 |--------|--------|
-| Mentioned in N books | KG |
-| Paragraph / fact count | KG |
-| PYQ count & patterns | QG |
+| Mentioned in N books | Layer 7b mappings |
+| Paragraph / fact count | KG (all mapped books) |
+| PYQ count & patterns | QG → `EXCON_*` |
 | Common confusions | QG + traps |
 | Revision priority | W4 formula |
-| Related concepts | KG 1-hop edges |
+| Related concepts | Exam KG 1-hop edges (post-resolution) |
 
 **AI role:** W4 + mostly SQL aggregations. Optional LLM for narrative `why_it_matters` (must be reviewed).
 
@@ -780,7 +843,8 @@ Student question → Retriever (KG + paragraphs + facts + PYQs) → LLM → Grou
 | **W1 Content** | Orchestrator dispatch | `paragraph_id`, `text`, `section_id`, `book_id`, glossary, `exam_profile` (both stages) | concepts, atomic_facts, entities, keywords, learning_objectives, `prelims_relevance`, `mains_relevance` |
 | **W2 Relationship** | W1 section complete | W1 outputs + neighbour sections | relationships, timeline, geography, synonyms, cross_refs |
 | **W3 Question** | PYQ import / batch | raw question, `stage` (`PRE` \| `MAINS_GS1`), exam, year, bpsc_cycle | parsed MCQ or descriptive Q, concept_mappings, pattern, bloom, difficulty, explanation |
-| **W4 Exam** | KG + QG published | graphs + `exam_profile` | topic intelligence: `prelims_intelligence`, `mains_intelligence`, `exam_focus` per stage |
+| **W4 Exam** | Layer 7b complete | resolved exam concepts + graphs + `exam_profile` | topic intelligence: `prelims_intelligence`, `mains_intelligence`, `exam_focus` per stage |
+| **Layer 7b** | All books in syllabus pack published | book concepts from Layer 7 | `EXCON_*`, `concept_mappings`, syllabus topic links |
 | **Validation Engine** | After each worker | worker JSON + canonical paragraphs | `ValidationReport`, routing, staging or reject |
 | **Review + Publish** | Staging ready | staging rows | approved → `intelligence.*` published |
 
@@ -803,17 +867,19 @@ Every AI output that contains a **fact** must satisfy:
 
 ## Part 5 — Data stored after AI (key entities)
 
-| Entity | ID pattern | Created by | Used by |
-|--------|------------|------------|---------|
-| Concept | `CONCEPT_{book}_{slug}` | W1 | Graph, practice, UI |
-| Atomic Fact | `FACT_{uuid}` | W1 | MCQ grounding, tutor |
-| Entity | `ENT_{slug}` | W1 | Graph, geography |
-| Relationship | `REL_{...}` | W2 | Navigator, Mains linkages |
-| Question | `Q_{exam}_{slug}_{seq}` | W3 | Practice engine |
-| Highlight | `HL_{section}_{slug}` | W1/W4 | AnnotatedText UI |
-| Trap | `TRAP_{section}_{slug}` | W1/W3 | "Avoid these traps" rail |
-| PYQ Pattern | `PYQ_{exam}_{year}_{seq}` | W3/W4 | "How BPSC tests it" rail |
-| Expected Pattern | `EXP_{section}_{slug}` | W4 | "What may be asked" rail |
+| Entity | ID pattern | Scope | Created by | Used by |
+|--------|------------|-------|------------|---------|
+| Book concept | `CONCEPT_{book}_{slug}` | Per book | W1 | Book KG, grounding |
+| Exam concept | `EXCON_{exam}_{slug}` | Per exam / syllabus | Layer 7b | PYQs, W4, revision, practice |
+| Concept mapping | `MAP_{uuid}` | book → exam | Layer 7b | Intelligence Engine |
+| Atomic Fact | `FACT_{uuid}` | Per book paragraph | W1 | MCQ grounding, tutor |
+| Entity | `ENT_{slug}` | Per book | W1 | Graph, geography |
+| Relationship | `REL_{...}` | Per book | W2 | Navigator, Mains linkages |
+| Question | `Q_{exam}_{slug}_{seq}` | Exam-wide | W3 | Practice engine |
+| Highlight | `HL_{section}_{slug}` | Per book section | W1/W4 | AnnotatedText UI |
+| Trap | `TRAP_{section}_{slug}` | Per topic | W1/W3 | "Avoid these traps" rail |
+| PYQ Pattern | `PYQ_{exam}_{year}_{seq}` | Exam-wide | W3/W4 | "How BPSC tests it" rail |
+| Expected Pattern | `EXP_{section}_{slug}` | Per syllabus topic | W4 | "What may be asked" rail |
 
 **Schemas:** PostgreSQL `intelligence_staging.*` → review → `intelligence.*`
 
@@ -824,6 +890,7 @@ Every AI output that contains a **fact** must satisfy:
 ### Owns ✅
 - AI Orchestration Layer (job DAG, batching, lineage)
 - 4 offline workers
+- **Concept Resolution (Layer 7b)** — book concept → exam concept mapping
 - **Validation Engine** (L1–L6 automated validators)
 - JSON schemas for structured LLM output
 - Staging tables + extraction jobs
@@ -846,7 +913,8 @@ Every AI output that contains a **fact** must satisfy:
 | **1** | Orchestration + W1 + W2 + Validation Engine for `hist_class10` CH 1–3 | 8 |
 | **2** | W3 on BPSC PYQ sample (Prelims MCQ + Mains GS-I) + Question Graph | 6 |
 | **3** | W4 (`prelims_intelligence` + `mains_intelligence`) + Intelligence Engine + API | 4 |
-| **4** | Full book + review UI | 4 |
+| **4** | Full NCERT book + review UI | 4 |
+| **5** | Layer 7b Concept Resolution + second book (e.g. Spectrum) in one syllabus pack | 6 |
 
 ---
 
@@ -941,3 +1009,27 @@ Early design had 9 micro-agents (Concept, Fact, Entity, Relation, Timeline, Geog
 | Relationship, Timeline, Geography | **W2** |
 | Question parse, concept map, pattern, Bloom | **W3** |
 | Difficulty, revision, weightage, trends | **W4** |
+
+---
+
+## Appendix C — Multi-book strategy (NCERT + reference books)
+
+When ingesting **multiple publications** for the same BPSC subject (e.g. NCERT Class 10/12 + Spectrum Modern History):
+
+| Principle | Rule |
+|-----------|------|
+| **Canonical text** | Always isolated per `book_id` — never merge paragraphs across books |
+| **W1 / W2** | Run per book; output `CONCEPT_{book}_{slug}` |
+| **Facts** | Every fact keeps `source_paragraph_id` + `book_id` (G-001–G-004) |
+| **PYQs / revision / W4** | Target `EXCON_{exam}_{slug}` after Layer 7b |
+| **Student UI** | Primary read path = `book_role: primary`; supplement tab for `reference` books |
+
+**Example syllabus pack `bpsc_gs1_history`:**
+
+| book_id | book_role | Student use |
+|---------|-----------|-------------|
+| `hist_class10` | `primary` | Main Reader workspace |
+| `hist_class12_themes` | `primary` | Main Reader workspace |
+| `spectrum_hist_modern` | `reference` | Extra facts, exam hooks — same exam concept via 7b |
+
+**Phase 1 (single NCERT book):** Layer 7b can be a passthrough (`EXCON_*` = 1:1 map from book concept). **Before a second book ships:** implement Layer 7b or PYQ intelligence will fragment across duplicate concepts.
