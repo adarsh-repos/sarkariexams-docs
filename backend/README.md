@@ -91,5 +91,5 @@ knowledge-compiler/
 
 ## Related
 
-- **AI contract:** [`../ai/00-ai-architecture-v1.md`](../ai/00-ai-architecture-v1.md)
-- **ADRs:** [`../wiki/adr/`](../wiki/adr/)
+- **AI contract:** [`../ai/AI-PLATFORM-GUIDE.md`](../ai/AI-PLATFORM-GUIDE.md)
+- **ADRs:** [`../ai/adr/`](../ai/adr/)

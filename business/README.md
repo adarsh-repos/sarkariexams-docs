@@ -68,6 +68,6 @@ SarkariExamsAI is a **Knowledge Intelligence Platform** for government exam prep
 
 ## Related folders
 
-- **AI architecture:** [`../ai/00-ai-architecture-v1.md`](../ai/00-ai-architecture-v1.md)
+- **AI architecture:** [`../ai/AI-PLATFORM-GUIDE.md`](../ai/AI-PLATFORM-GUIDE.md)
 - **Backend / data:** [`../backend/README.md`](../backend/README.md)
 - **Frontend / UX:** [`../frontend/README.md`](../frontend/README.md)

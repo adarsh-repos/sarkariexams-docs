@@ -25,24 +25,19 @@
 | 03 Canonical DB | `backend/03-canonical-database.md` |
 | 04 Student APIs | `backend/04-student-apis.md` |
 | 05 Reader UI | `frontend/01-reader-ui.md` |
-| 06–10 AI docs | Superseded by **`ai/`** folder (start at `ai/00-ai-architecture-v1.md`) |
+| 06–10 AI docs | Superseded by **[`ai/AI-PLATFORM-GUIDE.md`](../ai/AI-PLATFORM-GUIDE.md)** |
 | 07 Naming | `backend/05-naming-governance.md` |
 | 08 Ops | `backend/06-ops-testing.md` |
-| ADRs | `adr/` (still here) |
+| ADRs | [`../ai/adr/`](../ai/adr/) |
 
 ---
 
 ## AI team: start here
 
-**[`../ai/00-ai-architecture-v1.md`](../ai/00-ai-architecture-v1.md)**
-
-You receive an **AI Architecture Specification** — not prompts.
+**[`../ai/AI-PLATFORM-GUIDE.md`](../ai/AI-PLATFORM-GUIDE.md)** — single consolidated AI architecture doc (layers, inputs, outputs, workers).
 
 ---
 
 ## ADRs
 
-| ADR | Title |
-|-----|-------|
-| [001](./adr/001-deterministic-ingestion-first.md) | Deterministic Ingestion First |
-| [002](./adr/002-offline-extraction-human-review-gate.md) | Offline Extraction + Human Review |
+All AI architecture decisions: **[`../ai/adr/`](../ai/adr/)**

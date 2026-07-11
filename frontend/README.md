@@ -92,4 +92,4 @@ Mirror backend in `src/data/api/coursesTypes.ts`:
 ## Related
 
 - **Student API spec:** [`../backend/04-student-apis.md`](../backend/04-student-apis.md)
-- **AI intelligence model:** [`../ai/08-intelligence-engine.md`](../ai/08-intelligence-engine.md) (powers UI rails)
+- **AI platform guide:** [`../ai/AI-PLATFORM-GUIDE.md`](../ai/AI-PLATFORM-GUIDE.md) (powers UI intelligence rails)

@@ -5,7 +5,7 @@
 ```
 docs/
 ├── business/     → Product, vision, metrics (PM, leadership, investors)
-├── ai/           → AI Architecture Specification (AI team contract)
+├── ai/           → **All AI docs** (single guide + ADRs)
 ├── backend/      → Pipeline, database, APIs, ops (Backend, Data, Content Platform)
 ├── frontend/     → PWA, Reader UI, Redux (Frontend squad)
 └── wiki/         → Legacy index (redirects here)
@@ -17,7 +17,7 @@ docs/
 
 | Role | Start here | Then |
 |------|------------|------|
-| **AI Team** | [`ai/00-ai-architecture-v1.md`](./ai/00-ai-architecture-v1.md) | `ai/01`–`04` workers, `ai/05`–`08` |
+| **AI Team** | [`ai/AI-PLATFORM-GUIDE.md`](./ai/AI-PLATFORM-GUIDE.md) | One doc: layers, inputs, outputs, workers |
 | **Backend Engineer** | [`backend/README.md`](./backend/README.md) | Ingestion → DB → Student APIs |
 | **Frontend Engineer** | [`frontend/README.md`](./frontend/README.md) | Reader UI, state, API contracts |
 | **Product / Business** | [`business/README.md`](./business/README.md) | Vision, metrics, roadmap |
@@ -62,7 +62,7 @@ ONLINE AI TUTOR (future — RAG only)
 
 1. **Not an AI chatbot** — Knowledge Intelligence Platform for government exams.
 2. **Deterministic truth first** — No LLM in PDF ingestion.
-3. **AI team receives Architecture Spec, not prompts** — See `docs/ai/`.
+3. **AI team receives one spec** — [`ai/AI-PLATFORM-GUIDE.md`](./ai/AI-PLATFORM-GUIDE.md)
 4. **Four domain workers, not nine micro-agents** — Easier to build, test, monitor.
 5. **No AI output enters DB without validation + human review.**
 
@@ -76,7 +76,7 @@ ONLINE AI TUTOR (future — RAG only)
 | Canonical DB | ✅ Implemented |
 | Student `/api/courses` | ✅ Partial |
 | Reader UI | ✅ Deployed (mock default) |
-| AI Architecture v1 | 📋 Spec ready (`docs/ai/`) |
+| AI Platform Guide | 📋 Ready — [`ai/AI-PLATFORM-GUIDE.md`](./ai/AI-PLATFORM-GUIDE.md) |
 | Offline AI workers | ⬜ Not built |
 | Question Intelligence | ⬜ Not built |
 | Online Tutor | ⬜ Future |
