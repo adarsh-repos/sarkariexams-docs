@@ -15,6 +15,8 @@ This folder is the implementation blueprint for a separate **Expo / React Native
 
 `reference-screens/` contains the supplied product-reference screenshots. They are retained for internal UX analysis only.
 
+For a deduplicated business-facing flow, see [`unacademy/REFERENCE-APP-FLOW.md`](./unacademy/REFERENCE-APP-FLOW.md). The supplied reference PDF is stored as [`Economy-NCERT_v8.pdf`](./unacademy/Economy-NCERT_v8.pdf).
+
 - They illustrate patterns such as unit/lesson navigation, exam-mode separation, practice, Mains questions, performance, current affairs, and short-form learning.
 - They must **not** be copied as a branded product, source of content, or visual specification.
 - The Expo app will use SarkariExamsAI’s own BPSC content model, terminology, assets, and design system.
