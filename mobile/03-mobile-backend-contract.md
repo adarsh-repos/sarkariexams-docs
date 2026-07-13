@@ -61,6 +61,27 @@ These are proposed contracts, not yet implemented endpoints.
 | Current affairs | `GET /api/current-affairs`, `GET /api/current-affairs/{id}` | Content platform | Increment |
 | App configuration | `GET /api/mobile/config` | Platform | Blocking before production |
 
+## Functional-requirement coverage and readiness
+
+This contract is the API implementation companion to [Functional Requirements](./01-functional-requirement.md). A proposed endpoint is not production-ready until its versioned schema, authorization, fixtures, error responses, and idempotency behavior are available in a test environment.
+
+| Functional requirements | Required API capability | Accountable owner | Production readiness evidence |
+|---|---|---|---|
+| FR-01–03 — identity, secure session, profile | `GET /api/me`, refresh/logout, profile context, `GET /api/mobile/config` | Identity Platform + Platform | Auth/expiry/error scenarios, feature-config fallback, and contract fixtures |
+| FR-04–06 — Home and next action | `GET /api/home` with continuation and enabled capabilities | Student API | First-time, stale, empty-plan, and unavailable-capability responses |
+| FR-07–11 — Learn, reader, completion, offline | Catalog/course reads, unified workspace, completion, next topic | Backend Platform | Stable IDs, content versions, source fields, ETag/version behavior, idempotent completion |
+| FR-12–17 — Prelims, results, revision | Practice session, answer, result, revision queue | Assessment + Intelligence | Deterministic session, marking/version metadata, idempotency, immutable submitted answers, explainable revision reason |
+| FR-18–19 — conditional Mains browse/draft/submit | Mains questions, draft, submit/status | Assessment + Content Ops | Stage/source fields, revision-safe draft writes, conflict response, submission status |
+| FR-20 — evaluation status | Mains evaluation status and reviewed feedback payload | Evaluation Service | Rubric/citation/review fields or explicit `pending`/`unavailable` state |
+
+### Contract delivery rules
+
+- Publish OpenAPI/schema changes before mobile implementation and generate the mobile client from that schema; do not copy web response types manually.
+- Supply contract-valid fixtures for normal, empty, unauthorized, stale, validation-failure, and retryable-error responses.
+- Return a request ID on error responses so mobile telemetry and support can correlate failures without collecting raw learner content.
+- Include a feature/config version in `GET /api/mobile/config` and support a safe disabled state for Mains, News, and other gated features.
+- Do not enable a release-critical client feature until its endpoint is present in the test environment and passes consumer contract tests.
+
 ## Response contract requirements
 
 Every mobile-facing response must include:

@@ -7,7 +7,7 @@
 | Platform | Separate Expo / React Native client for iOS and Android |
 | Primary release | BPSC Prelims learning loop; Mains submission is conditional |
 | Primary audience | Product, mobile, backend, assessment, content operations, QA, and leadership |
-| Source of truth | [00 Product Brief](./00-mobile-product-brief.md), [01 UI Architecture](./01-expo-ui-architecture.md), [02 Backend Contract](./02-mobile-backend-contract.md), [03 Delivery Plan](./03-delivery-plan.md) |
+| Source of truth | [00 Product Brief](./00-mobile-product-brief.md), [02 Delivery Plan](./02-delivery-plan.md), [03 Backend Contract](./03-mobile-backend-contract.md), [04 UI Architecture](./04-expo-ui-architecture.md) |
 
 ## 1. Production decision
 
@@ -126,23 +126,7 @@ The **Reference screenshots** column attaches the relevant internal reference im
 
 Current affairs, shorts, rankings, subscriptions, and notifications are not release blockers. When introduced, each current-affairs claim must be reviewed, source-linked, BPSC-tagged, and connected to an eligible practice set.
 
-## 4. API and content readiness
-
-### API delivery matrix
-
-The contract document proposes mobile endpoints; the current Student API document confirms course APIs are partial and practice/progress APIs are planned. Production must not assume a proposed endpoint already exists.
-
-| Capability | Current evidence | Required production state | Accountable team | Release gate |
-|---|---|---|---|---|
-| Course catalog and topic reading | Partial: `/api/courses`, book, intro, steps, next | Schema-validated mobile response and stable identifiers | Backend Platform | Learn development |
-| Unified topic workspace | Proposed; current web client composes multiple calls | Decide and implement one workspace payload plus paginated steps | Backend Platform | Reader performance gate |
-| Session/profile and configuration | Proposed | Authenticated profile, refresh/logout, feature configuration | Identity + Platform | Foundation gate |
-| Home/continuation | Existing continue is placeholder; mobile Home proposed | Personalised continuation and one next action | Student API | Home gate |
-| Topic completion | Planned | Idempotent write with server revision | Student API | Learn completion gate |
-| Prelims sessions, answers, results | Planned | Session lifecycle, source/stage fields, idempotent answer submission | Assessment | Practice gate |
-| Revision queue | Proposed MVP increment | Explainable next revision action | Assessment + Intelligence | Production launch gate |
-| Mains questions/drafts | Planned | Filtered browse, revision-safe draft, submit/status | Assessment | Conditional Mains gate |
-| Published intelligence and sources | Partial/future | Published-only content with provenance | Content Ops + Intelligence | Content gate |
+## 4. Content and non-functional requirements
 
 ### Content minimum bar
 
@@ -153,56 +137,6 @@ The contract document proposes mobile endpoints; the current Student API documen
 | Revision | Enough tagged question/attempt data to return a meaningful next action; otherwise state that more attempts are needed |
 | Mains, if enabled | A reviewed GS-I question bank with stage, marks, year/pattern labels, word guidance, and draft/submit policy |
 | Rights and provenance | Content Ops confirms permitted use; external PDFs in `Reference/` remain internal licensing/review material unless explicitly cleared |
-
-## 5. Delivery plan, milestones, and gates
-
-Calendar dates are intentionally not invented. The release manager must convert the relative milestones below into dated commitments after each accountable team accepts its dependency.
-
-| Milestone | Scope | Entry criteria | Exit criteria | Accountable teams |
-|---|---|---|---|---|
-| M0 — Scope lock | Release decision, ownership, API inventory, analytics policy | This document approved | Auth, guest policy, Mains scope, entitlement, analytics, and API owners recorded | Product, engineering leads |
-| M1 — Foundation | Expo shell, routing, theme, typed transport, SecureStore, feature config, safe telemetry | M0 complete | App launches on iOS/Android, restores session, and reports privacy-safe diagnostics | Mobile, Identity, Platform |
-| M2 — Learn beta | Home, catalog, units, reader, completion, offline cache | Home/workspace/completion contracts available in test | A learner completes and resumes a canonical topic on a phone without dead ends | Mobile, Backend Platform, Content Ops, QA |
-| M3 — Prelims beta | Session creation, attempts, result, minimal revision | Assessment contract and reviewed question bank available | Learner completes linked MCQs, survives interruption, and receives an evidence-based next action | Mobile, Assessment, Content Ops, QA |
-| M4 — Conditional Mains | PYQ browse, drafts, submit/status | Mains APIs and reviewed GS-I content approved | Draft is never silently lost; submission status is visible | Mobile, Assessment, Content Ops, QA |
-| M5 — Production launch | Store release, support/monitoring, staged rollout | M3 complete; M4 only if conditional scope accepted | Go/no-go criteria pass and rollback owner is on call | Product, Mobile, QA, Support, Platform |
-
-### Critical path
-
-```mermaid
-flowchart TD
-    ScopeLock["M0 Scope lock"] --> Foundation["M1 Foundation"]
-    Foundation --> LearnBeta["M2 Learn beta"]
-    LearnBeta --> PrelimsBeta["M3 Prelims beta"]
-    PrelimsBeta --> Production["M5 Production launch"]
-    LearnBeta --> MainsGate["M4 Conditional Mains"]
-    MainsGate --> Production
-    Workspace["Workspace and completion APIs"] --> LearnBeta
-    Assessment["Practice session and result APIs"] --> PrelimsBeta
-    Content["Published source-backed content"] --> LearnBeta
-    Content --> PrelimsBeta
-```
-
-## 6. Ownership and operating model
-
-| Workstream | Accountable | Responsible | Consulted | Informed |
-|---|---|---|---|---|
-| Release scope, trade-offs, launch approval | Product lead | Senior PM | Mobile, Backend, Assessment, Content Ops, QA | Leadership, Support |
-| Mobile app, cache, retries, accessibility | Mobile engineering lead | Mobile team | Backend Platform, QA | Product |
-| Identity, catalog, workspace, API versioning | Backend Platform lead | Platform team | Mobile, Content Ops | Product, QA |
-| Practice and Mains attempt lifecycle | Assessment lead | Assessment team | Mobile, Content Ops | Product, QA |
-| Source provenance and published content | Content Ops lead | Content Ops | Product, Assessment, Intelligence | Mobile, QA |
-| Test strategy and release sign-off | QA lead | QA team | All delivery teams | Leadership |
-| Incident response and rollback | Platform lead | Platform + Mobile on-call | Product, Support | Leadership |
-
-### Required operating cadence
-
-- Weekly delivery review: milestone health, API/content readiness, scope changes, and blockers.
-- Twice-weekly contract review while M1–M3 are active: API schema, error states, idempotency, and fixture parity.
-- Beta review: funnel, crash-free sessions, sync errors, content/provenance defects, and support themes.
-- 30/60/90-day post-launch review: metrics against targets, release debt, and Phase 4 entry decision.
-
-## 7. Quality, safety, and production requirements
 
 ### Reliability and offline
 
@@ -230,7 +164,7 @@ flowchart TD
 - Maintain original product language, brand, iconography, and layouts.
 - Complete content-rights and app-store copy review before external beta.
 
-## 8. Measurement and instrumentation
+## 5. Measurement and instrumentation
 
 ### Core funnel
 
@@ -245,67 +179,21 @@ flowchart TD
 | `revision_action_seen` | reason code, topic ID | Measure recommendation coverage |
 | `mains_draft_saved` / `mains_submitted` | question ID, sync state | Measure conditional Mains adoption |
 
-### Launch health thresholds
+The product team reviews activation, lesson completion, practice conversion, accuracy lift, and D7 targets after an agreed observation period. These metrics are decision inputs, not guaranteed outcomes; delivery gates and release thresholds are maintained in the [Delivery Plan](./02-delivery-plan.md).
 
-Launch thresholds must be signed off before external release. At minimum, release cannot proceed if any release-critical journey has a reproducible dead end, unsafely loses a completion/answer/draft, serves unpublished content, or breaches privacy/content-rights policy.
+## 6. Document boundaries and references
 
-The product team reviews the initial activation, lesson completion, practice conversion, accuracy lift, and D7 targets in Section 2 after an agreed observation period; the metrics are decision inputs, not guaranteed outcomes.
-
-## 9. Go / no-go checklist
-
-### Go criteria
-
-- [ ] All M0 open decisions have an accountable owner and recorded resolution.
-- [ ] Blocking contracts are versioned, authenticated where needed, and validated with mobile contract tests.
-- [ ] A learner can complete Home → ordered lesson → completion → linked Prelims MCQs → revision action on iOS and Android.
-- [ ] Completion, attempt, and draft recovery behavior passes interrupted-network QA.
-- [ ] Every displayed fact and PYQ is published, source-backed, and stage-tagged.
-- [ ] Accessibility, dark mode, dynamic type, and slow-network tests pass.
-- [ ] Analytics events are privacy-reviewed and support request IDs are available.
-- [ ] Store listing, privacy disclosure, support playbook, monitoring, and rollback owner are approved.
-
-### No-go triggers
-
-- No owner or test environment exists for a blocking API.
-- Content is unlicensed, unpublished, or lacks required provenance.
-- Practice session state can duplicate or lose an answer after interruption.
-- Mains evaluation is represented as authoritative without approved rubric/citations/review policy.
-- Crash, authentication, sync, or security defects exceed the agreed beta threshold.
-
-## 10. Rollout and rollback
-
-| Stage | Audience | Objective | Exit decision |
-|---|---|---|---|
-| Internal dogfood | Delivery teams and designated content reviewers | Validate contracts, content provenance, critical journeys, and support process | Fix all release-critical defects |
-| Closed beta | Small, consented BPSC learner cohort | Validate activation, lesson-to-practice loop, offline recovery, and content comprehension | PM and engineering approve staged release |
-| Staged store release | Incremental eligible-store cohort | Monitor crash, auth, API, sync, and funnel health | Expand only if launch thresholds hold |
-| General availability | Eligible BPSC learners | Operate production core and measure retention/learning outcomes | Begin Phase 4 assessment |
-
-Rollback means disabling affected capabilities through mobile configuration where possible, pausing cohort expansion, preserving unsynced local mutations, and communicating clear recovery steps. It must not delete learner progress.
-
-## 11. Open decisions and sign-off
-
-| Decision | Default recommendation | Accountable owner | Required before |
-|---|---|---|---|
-| Authentication and guest access | Phone-based sign-in for progress; guest reading only with explicit merge rules | Product + Identity | M0 |
-| Workspace response shape | One workspace payload plus paginated reading steps | Backend Platform | M1 |
-| First-release Mains scope | Browse/draft/submit only; evaluation is fast follow | Product + Assessment | M3 |
-| Content entitlement | Preserve promised reading access; do not ship payments before policy approval | Product + Content Ops | M5 |
-| Analytics and retention | Privacy-safe event schema; vendor and retention approved by Platform/Privacy | Product + Platform | M1 |
-| API dates and test environments | Each blocking API has owner, version, test fixture, and delivery date | Backend/Assessment leads | M0 |
-
-## 12. Post-launch direction
-
-Phase 4 can begin only after the production core demonstrates safe, source-backed learning and the launch health review does not identify a critical retention, content, or reliability issue.
-
-Phase 4 adds reviewed current affairs and published intelligence. Phase 5 additions—notifications, targets, subscriptions, shorts, leaderboards, and broader test modes—must each demonstrate that they strengthen the learning loop rather than distract from it.
-
-## Appendix: implementation references
+| Topic | Owning document |
+|---|---|
+| Functional scope, requirements, acceptance criteria, content/non-functional requirements, and metrics | This document |
+| Endpoint readiness, response contracts, API ownership, and sync protocol | [Mobile Backend Contract](./03-mobile-backend-contract.md) |
+| Milestones, dependency gates, RACI, go/no-go, rollout, and post-launch sequencing | [Delivery Plan](./02-delivery-plan.md) |
+| Architecture decisions and client implementation boundaries | [Expo UI Architecture](./04-expo-ui-architecture.md) |
 
 - [Mobile Product Brief](./00-mobile-product-brief.md)
-- [Expo UI Architecture](./01-expo-ui-architecture.md)
-- [Mobile Backend Contract](./02-mobile-backend-contract.md)
-- [Delivery Plan](./03-delivery-plan.md)
+- [Expo UI Architecture](./04-expo-ui-architecture.md)
+- [Mobile Backend Contract](./03-mobile-backend-contract.md)
+- [Delivery Plan](./02-delivery-plan.md)
 - [Reference App Flow](./Reference/REFERENCE-APP-FLOW.md)
 - [Student APIs](../backend/04-student-apis.md)
 - [AI Platform Guide](../ai/AI-PLATFORM-GUIDE.md)

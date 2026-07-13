@@ -7,10 +7,10 @@ This folder is the implementation blueprint for a separate **Expo / React Native
 | # | Document | Audience | Purpose |
 |---|---|---|---|
 | 00 | [Mobile Product Brief](./00-mobile-product-brief.md) | Product, Content Ops, leadership | Product scope, user value, BPSC experience, business boundaries |
-| 01 | [Expo UI Architecture](./01-expo-ui-architecture.md) | Mobile engineering, UX, QA | Navigation, screens, state, design and accessibility requirements |
-| 02 | [Mobile Backend Contract](./02-mobile-backend-contract.md) | Backend, mobile engineering | Existing API reuse, required mobile contracts, sync and ownership |
-| 03 | [Delivery Plan & Reference Inventory](./03-delivery-plan.md) | Delivery leads, all teams | MVP phases, dependencies, acceptance criteria, screenshot reference inventory |
-| 04 | [Mobile Production Plan](./04-mobile-production-plan.md) | Product, engineering, content ops, QA, leadership | Release scope, functional requirements, ownership, gates, rollout, and launch criteria |
+| 01 | [Functional Requirements](./01-functional-requirement.md) | Product, engineering, content ops, QA | Product scope, functional/non-functional requirements, acceptance criteria, and measurement |
+| 02 | [Delivery Plan & Reference Inventory](./02-delivery-plan.md) | Delivery leads, all teams | MVP phases, milestones, ownership, launch gates, rollout, and reference inventory |
+| 03 | [Mobile Backend Contract](./03-mobile-backend-contract.md) | Backend, mobile engineering | Existing API reuse, API readiness, required mobile contracts, sync, and ownership |
+| 04 | [Expo UI Architecture](./04-expo-ui-architecture.md) | Mobile engineering, UX, QA | Production client architecture, navigation, state, design, offline behavior, and quality requirements |
 
 ## Reference screenshots
 

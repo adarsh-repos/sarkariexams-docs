@@ -101,4 +101,4 @@ The Expo team can start implementation when:
 1. A BPSC learner can move from Home to an ordered lesson to practice without dead ends.
 2. Every student-facing fact and PYQ continues to reference the knowledge platform’s canonical/exam-intelligence source.
 3. Prelims and Mains remain separate experiences but share topic and progress identifiers.
-4. The backend contract in [02-mobile-backend-contract.md](./02-mobile-backend-contract.md) has an owner and delivery phase for every blocking endpoint.
+4. The backend contract in [03-mobile-backend-contract.md](./03-mobile-backend-contract.md) has an owner and delivery phase for every blocking endpoint.

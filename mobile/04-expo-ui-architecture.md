@@ -7,7 +7,7 @@
 | Target | iOS and Android |
 | API source | SarkariExamsAI Student APIs |
 | Release scope | Production core: authenticated Home → Learn → Prelims → revision |
-| Related plan | [Mobile MVP Production Plan](./functional-requirement-planning.md) |
+| Related plan | [Functional Requirements](./01-functional-requirement.md) |
 
 ## Architecture principles
 
