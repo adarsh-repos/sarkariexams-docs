@@ -10,12 +10,13 @@ This folder is the implementation blueprint for a separate **Expo / React Native
 | 01 | [Expo UI Architecture](./01-expo-ui-architecture.md) | Mobile engineering, UX, QA | Navigation, screens, state, design and accessibility requirements |
 | 02 | [Mobile Backend Contract](./02-mobile-backend-contract.md) | Backend, mobile engineering | Existing API reuse, required mobile contracts, sync and ownership |
 | 03 | [Delivery Plan & Reference Inventory](./03-delivery-plan.md) | Delivery leads, all teams | MVP phases, dependencies, acceptance criteria, screenshot reference inventory |
+| 04 | [Mobile Production Plan](./04-mobile-production-plan.md) | Product, engineering, content ops, QA, leadership | Release scope, functional requirements, ownership, gates, rollout, and launch criteria |
 
 ## Reference screenshots
 
-`reference-screens/` contains the supplied product-reference screenshots. They are retained for internal UX analysis only.
+`Reference/` contains the supplied product-reference material. It is retained for internal UX analysis and licensing review only.
 
-For a deduplicated business-facing flow, see [`unacademy/REFERENCE-APP-FLOW.md`](./unacademy/REFERENCE-APP-FLOW.md). The supplied reference PDF is stored as [`Economy-NCERT_v8.pdf`](./unacademy/Economy-NCERT_v8.pdf).
+For the business-facing flow, see [`Reference/REFERENCE-APP-FLOW.md`](./Reference/REFERENCE-APP-FLOW.md). The supplied reference PDFs are stored in [`Reference/UnaccademyPdf/`](./Reference/UnaccademyPdf/).
 
 - They illustrate patterns such as unit/lesson navigation, exam-mode separation, practice, Mains questions, performance, current affairs, and short-form learning.
 - They must **not** be copied as a branded product, source of content, or visual specification.
