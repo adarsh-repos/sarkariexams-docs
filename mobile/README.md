@@ -11,6 +11,7 @@ This folder is the implementation blueprint for a separate **Expo / React Native
 | 02 | [Delivery Plan & Reference Inventory](./02-delivery-plan.md) | Delivery leads, all teams | MVP phases, milestones, ownership, launch gates, rollout, and reference inventory |
 | 03 | [Mobile Backend Contract](./03-mobile-backend-contract.md) | Backend, mobile engineering | Existing API reuse, API readiness, required mobile contracts, sync, and ownership |
 | 04 | [Expo UI Architecture](./04-expo-ui-architecture.md) | Mobile engineering, UX, QA | Production client architecture, navigation, state, design, offline behavior, and quality requirements |
+| 05 | [Scalable Mobile Platform Architecture](./05-scalable-platform-architecture.md) | Product, mobile, backend, data, AI, content ops, QA | Cross-stack architecture, data flows, operational controls, and scale-out decisions |
 
 ## Reference screenshots
 
