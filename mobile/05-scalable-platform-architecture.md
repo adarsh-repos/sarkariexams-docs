@@ -238,25 +238,45 @@ sequenceDiagram
 flowchart TB
     Users["Mobile and web learners"] --> Cdn["CDN, WAF, and static hosting"]
     Users --> Gateway["Managed API gateway"]
-    Gateway --> ApiA["Student API instances"]
-    Gateway --> ApiB["Student API instances"]
-    ApiA --> Pool["Database connection pool"]
-    ApiB --> Pool
+
+    Gateway --> ApiPool["Student API replica pool"]
+    subgraph Monolith["Every replica is the same FastAPI modular monolith"]
+        direction LR
+        IdentityModule["Identity and session"]
+        ConfigModule["Mobile configuration"]
+        ContentModule["Home and content"]
+        AssessmentModule["Assessment and revision"]
+        SyncModule["Idempotency and sync"]
+        ObservabilityModule["Request correlation and observability"]
+    end
+
+    ApiPool --> IdentityModule
+    ApiPool --> ConfigModule
+    ApiPool --> ContentModule
+    ApiPool --> AssessmentModule
+    ApiPool --> SyncModule
+    ApiPool --> ObservabilityModule
+
+    IdentityModule --> Pool["Database connection pool"]
+    ContentModule --> Pool
+    AssessmentModule --> Pool
+    SyncModule --> Pool
     Pool --> Primary[("PostgreSQL primary")]
-    ApiA --> Replica[("Read replica when needed")]
-    ApiB --> Replica
-    ApiA --> Redis[("Redis cache and rate limits")]
-    ApiB --> Redis
-    ApiA --> Objects["Object storage and asset CDN"]
-    ApiB --> Objects
+    ContentModule --> Replica[("Read replica when needed")]
+    AssessmentModule --> Replica
+    ConfigModule --> Redis[("Redis cache and rate limits")]
+    ContentModule --> Redis
+    ContentModule --> Objects["Object storage and asset CDN"]
+    AssessmentModule --> Published[("Published intelligence")]
     Primary --> Queue["Durable job queue"]
     Queue --> Ingest["Ingestion workers"]
     Queue --> Intelligence["Offline intelligence workers"]
-    ApiA --> Telemetry["Logs, metrics, traces, and alerts"]
-    ApiB --> Telemetry
+    ObservabilityModule --> Telemetry["Logs, metrics, traces, and alerts"]
     Ingest --> Telemetry
     Intelligence --> Telemetry
 ```
+
+`Student API replica pool` means multiple identical deployments of one FastAPI application behind the gateway. It does **not** mean Identity, Config, Content, Assessment, and Sync are separate production services. Every replica contains all six modules; requests can land on any replica because durable state is held in shared platform stores, not in process memory.
 
 ### Deployment decisions
 
