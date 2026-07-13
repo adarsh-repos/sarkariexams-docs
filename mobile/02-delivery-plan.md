@@ -1,4 +1,4 @@
-# 03 — Delivery Plan & Reference Inventory
+# 02 — Delivery Plan & Reference Inventory
 
 | Field | Value |
 |---|---|
