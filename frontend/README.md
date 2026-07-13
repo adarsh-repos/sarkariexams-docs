@@ -93,3 +93,4 @@ Mirror backend in `src/data/api/coursesTypes.ts`:
 
 - **Student API spec:** [`../backend/04-student-apis.md`](../backend/04-student-apis.md)
 - **AI platform guide:** [`../ai/AI-PLATFORM-GUIDE.md`](../ai/AI-PLATFORM-GUIDE.md) (powers UI intelligence rails)
+- **Separate Expo mobile blueprint:** [`../mobile/README.md`](../mobile/README.md) (shares API contracts, not web implementation)

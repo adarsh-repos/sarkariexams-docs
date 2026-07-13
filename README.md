@@ -8,6 +8,7 @@ docs/
 ├── ai/           → **All AI docs** (single guide + ADRs)
 ├── backend/      → Pipeline, database, APIs, ops (Backend, Data, Content Platform)
 ├── frontend/     → PWA, Reader UI, Redux (Frontend squad)
+├── mobile/       → Expo mobile blueprint + reference-screen inventory
 └── wiki/         → Legacy index (redirects here)
 ```
 
@@ -20,6 +21,7 @@ docs/
 | **AI Team** | [`ai/AI-PLATFORM-GUIDE.md`](./ai/AI-PLATFORM-GUIDE.md) | One doc: layers, inputs, outputs, workers |
 | **Backend Engineer** | [`backend/README.md`](./backend/README.md) | Ingestion → DB → Student APIs |
 | **Frontend Engineer** | [`frontend/README.md`](./frontend/README.md) | Reader UI, state, API contracts |
+| **Mobile Engineer / UX** | [`mobile/README.md`](./mobile/README.md) | Expo architecture, mobile API contract, delivery plan |
 | **Product / Business** | [`business/README.md`](./business/README.md) | Vision, metrics, roadmap |
 | **New engineer (any)** | [`business/01-platform-vision.md`](./business/01-platform-vision.md) → [`backend/01-system-architecture.md`](./backend/01-system-architecture.md) | Your squad folder |
 
@@ -38,7 +40,7 @@ Knowledge Graph + Question Graph → Intelligence Engine
         ↓
 STUDENT APIs (SQL only, no LLM)
         ↓
-READER UI (SarkariExamsAI PWA)
+WEB PWA + EXPO MOBILE CLIENT
         ↓
 ONLINE AI TUTOR (future — RAG only)
 ```
@@ -51,6 +53,7 @@ ONLINE AI TUTOR (future — RAG only)
 |------|-------------|------------|
 | `knowledge-compiler/` | `docs/backend/` | API TBD / Supabase |
 | `sarkariexamsAI/` | `docs/frontend/` | https://guileless-crepe-c5261c.netlify.app |
+| Expo mobile (planned) | `docs/mobile/` | Separate client; not scaffolded |
 | Cross-cutting AI | `docs/ai/` | Offline batch jobs |
 | Product | `docs/business/` | — |
 
@@ -74,6 +77,7 @@ ONLINE AI TUTOR (future — RAG only)
 | Canonical DB | ✅ Implemented |
 | Student `/api/courses` | ✅ Partial |
 | Reader UI | ✅ Deployed (mock default) |
+| Expo mobile blueprint | 📋 Ready — [`mobile/README.md`](./mobile/README.md) |
 | AI Platform Guide | 📋 Ready — [`ai/AI-PLATFORM-GUIDE.md`](./ai/AI-PLATFORM-GUIDE.md) |
 | Offline AI workers | ⬜ Not built |
 | Question Intelligence | ⬜ Not built |

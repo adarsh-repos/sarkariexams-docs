@@ -93,3 +93,4 @@ knowledge-compiler/
 
 - **AI contract:** [`../ai/AI-PLATFORM-GUIDE.md`](../ai/AI-PLATFORM-GUIDE.md)
 - **ADRs:** [`../ai/adr/`](../ai/adr/)
+- **Expo mobile API requirements:** [`../mobile/02-mobile-backend-contract.md`](../mobile/02-mobile-backend-contract.md)
