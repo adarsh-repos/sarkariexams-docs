@@ -20,6 +20,31 @@ SarkariExamsAI should evolve as a **modular, canonical-truth-first platform**:
 
 This is a target architecture, not a claim that all components already exist. Existing course-reading APIs are partial; identity, Home, practice, revision, configuration, and Mains APIs remain delivery work described in the [Mobile Backend Contract](./03-mobile-backend-contract.md).
 
+### Start here: how the platform works
+
+Read the architecture in this order: **learner → Expo app → the correct API module → trusted data**. The app does not talk directly to the database or AI pipeline.
+
+```mermaid
+flowchart LR
+    Learner["BPSC learner"] --> App["Expo mobile app"]
+    App --> Config["Config API: enabled features"]
+    App --> Identity["Identity API: who is the learner"]
+    App --> Student["Student API: Home, lessons, and completion"]
+    App --> Assessment["Assessment API: practice, results, and revision"]
+    Student --> Content["Published canonical content"]
+    Assessment --> Progress["Learner attempts and progress"]
+```
+
+| Component | Simple responsibility | Example learner moment |
+|---|---|---|
+| Expo mobile app | Shows the experience and safely stores local offline state | The learner opens a lesson or resumes a question |
+| Config API | Decides which approved capabilities are visible | Mains remains hidden until its content and APIs are ready |
+| Identity API | Restores login and confirms the learner context | The learner returns to their own Home plan |
+| Student API | Serves Home, catalog, reading, and completion | The learner reads a published topic and marks it complete |
+| Assessment API | Runs practice, scoring, results, and revision | The learner answers a Prelims question and sees a revision action |
+
+The detailed sequence in Section 4 expands this same flow. It is read from top to bottom: the app checks configuration, restores identity, loads learning content, then starts and records practice.
+
 ## 2. Current state and target state
 
 | Area | Current documented state | Production target |
