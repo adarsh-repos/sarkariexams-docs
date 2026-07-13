@@ -73,52 +73,54 @@ Enable a serious BPSC aspirant who primarily studies on a phone to move reliably
 
 The reference journey in [Reference/REFERENCE-APP-FLOW.md](./Reference/REFERENCE-APP-FLOW.md) informs interaction patterns only. It does not authorize visual or content replication.
 
+The **Reference screenshots** column attaches the relevant internal reference images for each flow. A “No visual reference” entry means the requirement is a production need not represented by the captured reference journey; it still requires original SarkariExamsAI design.
+
 ### 3.1 Identity and launch
 
-| ID | Requirement | Priority | Acceptance criteria | Dependency |
-|---|---|---|---|---|
-| FR-01 | The app restores an existing session on launch and otherwise guides the learner through approved authentication. | Must | No learner progress is shown without the correct user context. Expired sessions lead to a recoverable sign-in state. | Identity: `GET /api/me`, refresh, logout |
-| FR-02 | Credentials are stored only with Expo SecureStore. | Must | No access token, refresh token, or raw Mains answer is emitted in analytics or standard logs. | Mobile platform |
-| FR-03 | The learner can select BPSC/profile preferences required to personalise Home. | Must | Profile selection produces a stable learner and exam context. | Identity and Student API |
+| ID | Requirement | Priority | Acceptance criteria | Dependency | Reference screenshots |
+|---|---|---|---|---|---|
+| FR-01 | The app restores an existing session on launch and otherwise guides the learner through approved authentication. | Must | No learner progress is shown without the correct user context. Expired sessions lead to a recoverable sign-in state. | Identity: `GET /api/me`, refresh, logout | <img src="./Reference/functional-requirement-screens/01-login-phone.png" alt="01 Phone login" width="72"> <img src="./Reference/functional-requirement-screens/02-login-otp.png" alt="02 OTP verification" width="72"> |
+| FR-02 | Credentials are stored only with Expo SecureStore. | Must | No access token, refresh token, or raw Mains answer is emitted in analytics or standard logs. | Mobile platform | <img src="./Reference/functional-requirement-screens/01-login-phone.png" alt="01 Phone login" width="72"> <img src="./Reference/functional-requirement-screens/02-login-otp.png" alt="02 OTP verification" width="72"> |
+| FR-03 | The learner can select BPSC/profile preferences required to personalise Home. | Must | Profile selection produces a stable learner and exam context. | Identity and Student API | <img src="./Reference/functional-requirement-screens/03-home-dashboard.png" alt="03 Home with BPSC selector" width="72"> |
 
 **Product decision required:** confirm phone OTP provider and whether anonymous reading is allowed. If guest reading is approved, progress merging and conflict resolution must be specified before implementation.
 
 ### 3.2 Home and next action
 
-| ID | Requirement | Priority | Acceptance criteria | Dependency |
-|---|---|---|---|---|
-| FR-04 | Home displays one prominent, resumable next action. | Must | A returning learner can continue reading or practice without navigating a catalog first. | `GET /api/home` (proposed) |
-| FR-05 | Home presents only valid secondary actions: Learn and Prelims; Mains appears when enabled for the release. | Must | No unavailable destination leads to a dead end. | Mobile configuration |
-| FR-06 | Home handles first-use, empty-plan, stale-cache, error, and signed-out states. | Must | Each state provides a specific recovery action rather than an empty screen. | Mobile and Student API |
+| ID | Requirement | Priority | Acceptance criteria | Dependency | Reference screenshots |
+|---|---|---|---|---|---|
+| FR-04 | Home displays one prominent, resumable next action. | Must | A returning learner can continue reading or practice without navigating a catalog first. | `GET /api/home` (proposed) | <img src="./Reference/functional-requirement-screens/03-home-dashboard.png" alt="03 Home dashboard" width="72"> |
+| FR-05 | Home presents only valid secondary actions: Learn and Prelims; Mains appears when enabled for the release. | Must | No unavailable destination leads to a dead end. | Mobile configuration | <img src="./Reference/functional-requirement-screens/03-home-dashboard.png" alt="03 Home navigation" width="72"> |
+| FR-06 | Home handles first-use, empty-plan, stale-cache, error, and signed-out states. | Must | Each state provides a specific recovery action rather than an empty screen. | Mobile and Student API | No visual reference — original empty/error states required |
 
 ### 3.3 Learn: catalog, reader, and completion
 
-| ID | Requirement | Priority | Acceptance criteria | Dependency |
-|---|---|---|---|---|
-| FR-07 | Learners navigate canonical hierarchy: subject → unit → ordered lesson → topic reader. | Must | Topic order and labels match stable `book_id`, `chapter_id`, and `topic_id` values. | Existing course endpoints |
-| FR-08 | The reader renders canonical content, reviewed highlights, figures, and source context; it is not a raw PDF viewer. | Must | Each response carries `id`, `content_version`, and `updated_at`; unpublished internal IDs are absent. | Workspace API and content platform |
-| FR-09 | Learners can mark a topic complete and receive the next canonical topic. | Must | Completion is idempotent, monotonic, and safely retried after an interruption. | Completion API |
-| FR-10 | Recently opened lessons remain readable offline with a visible cache timestamp. | Must | Cached reading is versioned and safely revalidated when connectivity returns. | Local cache and ETag/version support |
-| FR-11 | Prerequisite gates are used only when pedagogically necessary. | Should | A gate explains the requirement and never obscures promised core NCERT reading. | Product/content rule |
+| ID | Requirement | Priority | Acceptance criteria | Dependency | Reference screenshots |
+|---|---|---|---|---|---|
+| FR-07 | Learners navigate canonical hierarchy: subject → unit → ordered lesson → topic reader. | Must | Topic order and labels match stable `book_id`, `chapter_id`, and `topic_id` values. | Existing course endpoints | <img src="./Reference/functional-requirement-screens/04-subject-list.png" alt="04 Subject list" width="58"> <img src="./Reference/functional-requirement-screens/05-subject-grid.png" alt="05 Subject grid" width="58"> <img src="./Reference/functional-requirement-screens/06-subject-units.png" alt="06 Unit catalog" width="58"> <img src="./Reference/functional-requirement-screens/07-ordered-lesson-path.png" alt="07 Lesson path" width="58"> |
+| FR-08 | The reader renders canonical content, reviewed highlights, figures, and source context; it is not a raw PDF viewer. | Must | Each response carries `id`, `content_version`, and `updated_at`; unpublished internal IDs are absent. | Workspace API and content platform | <img src="./Reference/functional-requirement-screens/07-ordered-lesson-path.png" alt="07 Learning path checkpoint" width="72"> |
+| FR-09 | Learners can mark a topic complete and receive the next canonical topic. | Must | Completion is idempotent, monotonic, and safely retried after an interruption. | Completion API | <img src="./Reference/functional-requirement-screens/07-ordered-lesson-path.png" alt="07 Ordered lesson progress" width="72"> |
+| FR-10 | Recently opened lessons remain readable offline with a visible cache timestamp. | Must | Cached reading is versioned and safely revalidated when connectivity returns. | Local cache and ETag/version support | No visual reference — original offline state required |
+| FR-11 | Prerequisite gates are used only when pedagogically necessary. | Should | A gate explains the requirement and never obscures promised core NCERT reading. | Product/content rule | <img src="./Reference/functional-requirement-screens/08-lesson-lock-gate.png" alt="08 Lesson gate" width="72"> |
 
 ### 3.4 Prelims practice and revision
 
-| ID | Requirement | Priority | Acceptance criteria | Dependency |
-|---|---|---|---|---|
-| FR-12 | A learner can start topic-linked BPSC MCQ/PYQ practice from a completed or active learning path. | Must | Session creation records stage `PRE`, selected topic, question source, and deterministic session ID. | Assessment session API |
-| FR-13 | Practice configuration supports subject, topic, question count, PYQ window, and attempt-history filters. | Must | Empty filters explain that no questions match; they do not silently substitute unrelated items. | Assessment catalog |
-| FR-14 | Practice mode provides immediate explanation; test simulation uses the currently approved BPSC marking scheme. | Must | Marking rules carry source/version metadata and are displayed before a timed test. | Assessment/content |
-| FR-15 | One-question-at-a-time attempts preserve selected answer and session state through app restart or network loss. | Must | Submitted answers cannot be duplicated; post-submit answers are immutable. | Device queue and answer API |
-| FR-16 | Results show accuracy, mistakes, and at least one next revision action. | Must | Recommendations are explainable from attempt evidence and validated PYQ/topic priority. | Results and revision APIs |
-| FR-17 | Overall and subject-level progress distinguish Prelims from Mains data. | Should | No aggregate accuracy merges stages without an explicit learner choice. | Progress service |
+| ID | Requirement | Priority | Acceptance criteria | Dependency | Reference screenshots |
+|---|---|---|---|---|---|
+| FR-12 | A learner can start topic-linked BPSC MCQ/PYQ practice from a completed or active learning path. | Must | Session creation records stage `PRE`, selected topic, question source, and deterministic session ID. | Assessment session API | <img src="./Reference/functional-requirement-screens/09-prelims-home.png" alt="09 Prelims workspace" width="58"> <img src="./Reference/functional-requirement-screens/10-practice-hub.png" alt="10 Practice hub" width="58"> <img src="./Reference/functional-requirement-screens/11-practice-configuration.png" alt="11 Practice configuration" width="58"> |
+| FR-13 | Practice configuration supports subject, topic, question count, PYQ window, and attempt-history filters. | Must | Empty filters explain that no questions match; they do not silently substitute unrelated items. | Assessment catalog | <img src="./Reference/functional-requirement-screens/11-practice-configuration.png" alt="11 Practice filters" width="72"> <img src="./Reference/functional-requirement-screens/17-pyq-filter.png" alt="17 PYQ filters" width="72"> |
+| FR-14 | Practice mode provides immediate explanation; test simulation uses the currently approved BPSC marking scheme. | Must | Marking rules carry source/version metadata and are displayed before a timed test. | Assessment/content | <img src="./Reference/functional-requirement-screens/12-practice-test-modes.png" alt="12 Practice and test modes" width="72"> <img src="./Reference/functional-requirement-screens/13-marking-scheme.png" alt="13 Marking scheme" width="72"> |
+| FR-15 | One-question-at-a-time attempts preserve selected answer and session state through app restart or network loss. | Must | Submitted answers cannot be duplicated; post-submit answers are immutable. | Device queue and answer API | <img src="./Reference/functional-requirement-screens/14-question-generation.png" alt="14 Question preparation" width="58"> <img src="./Reference/functional-requirement-screens/15-mcq-question.png" alt="15 MCQ attempt" width="58"> <img src="./Reference/functional-requirement-screens/16-exit-practice-confirmation.png" alt="16 Exit confirmation" width="58"> |
+| FR-16 | Results show accuracy, mistakes, and at least one next revision action. | Must | Recommendations are explainable from attempt evidence and validated PYQ/topic priority. | Results and revision APIs | <img src="./Reference/functional-requirement-screens/18-overall-progress.png" alt="18 Overall progress" width="58"> <img src="./Reference/functional-requirement-screens/19-subject-performance.png" alt="19 Subject performance" width="58"> <img src="./Reference/functional-requirement-screens/21-revision-areas.png" alt="21 Revision areas" width="58"> |
+| FR-17 | Overall and subject-level progress distinguish Prelims from Mains data. | Should | No aggregate accuracy merges stages without an explicit learner choice. | Progress service | <img src="./Reference/functional-requirement-screens/18-overall-progress.png" alt="18 Overall progress" width="58"> <img src="./Reference/functional-requirement-screens/19-subject-performance.png" alt="19 Subject progress" width="58"> <img src="./Reference/functional-requirement-screens/20-progress-comparison.png" alt="20 Progress comparison" width="58"> |
 
 ### 3.5 Conditional Mains submission
 
-| ID | Requirement | Priority | Acceptance criteria | Dependency |
-|---|---|---|---|---|
-| FR-18 | Learners can browse BPSC Mains GS-I questions by subject, topic, year, marks, and pattern. | Conditional | All questions show `MAINS_GS1` stage and source/provenance. | Assessment/content |
-| FR-19 | Learners can write, save, resume, and submit a structured answer. | Conditional | Offline drafts are clearly marked as local; newer remote drafts create a conflict prompt before overwrite. | Mains draft/submit APIs |
-| FR-20 | Evaluation shows status only until the evaluation policy, rubric, source citations, and review model are approved. | Fast follow | The app never presents unreviewed feedback as authoritative. | Evaluation service |
+| ID | Requirement | Priority | Acceptance criteria | Dependency | Reference screenshots |
+|---|---|---|---|---|---|
+| FR-18 | Learners can browse BPSC Mains GS-I questions by subject, topic, year, marks, and pattern. | Conditional | All questions show `MAINS_GS1` stage and source/provenance. | Assessment/content | <img src="./Reference/functional-requirement-screens/22-mains-pyq-list.png" alt="22 Mains PYQ list" width="72"> |
+| FR-19 | Learners can write, save, resume, and submit a structured answer. | Conditional | Offline drafts are clearly marked as local; newer remote drafts create a conflict prompt before overwrite. | Mains draft/submit APIs | <img src="./Reference/functional-requirement-screens/23-daily-mains-question.png" alt="23 Daily Mains question" width="72"> |
+| FR-20 | Evaluation shows status only until the evaluation policy, rubric, source citations, and review model are approved. | Fast follow | The app never presents unreviewed feedback as authoritative. | Evaluation service | No visual reference — original evaluation/status states required |
 
 ### 3.6 Deferred News and engagement
 
